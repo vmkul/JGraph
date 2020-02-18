@@ -113,6 +113,16 @@ Graph.prototype.draw = function() {
   }
 };
 
+Graph.prototype.circle = function() {
+  for (let i = 1; i <= this.adjM.length; i++) {
+    const delta = 2 * Math.PI / this.adjM.length;
+    const x = 170 * Math.cos(i * delta) + 200;
+    const y = 170 * Math.sin(i * delta) + 200;
+    this.vertex(x, y, i);
+  }
+  this.draw();
+};
+
 const canvas_arrow = (context, fromx, fromy, tox, toy) => {
   const headlen = 10; // length of head in pixels
   const dx = tox - fromx;
