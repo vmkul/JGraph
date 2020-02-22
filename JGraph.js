@@ -11,6 +11,12 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
   if (v1 === v2) {
     this.ctx.arc(v1.x, v1.y - 2 * this.radius, this.radius + 1, 0, 2 * Math.PI);
     this.ctx.stroke();
+    if (directed) {
+      v1.out++;
+      v1.in++;
+    } else {
+      v1.deg += 2;
+    }
     return;
   }
   const xr = v2.x - v1.x;
@@ -19,6 +25,9 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
   const xinter = Math.sqrt((this.radius ** 2)/(1 + k ** 2));
   const yinter = k * xinter; 
   if (directed) {
+    v1.out++;
+    v2.in++;
+   
     if (v1.x === v2.x) {
       if (v2.y > v1.y) {
         canvas_arrow(this.ctx, v1.x, v1.y + this.radius, v2.x, v2.y - this.radius);
@@ -33,6 +42,10 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
       }
     }
   } else {
+    
+    v1.deg++;
+    v2.deg++;
+    
     if (v1.x === v2.x) {
       if (v2.y > v1.y) {
         this.ctx.moveTo(v1.x, v1.y + this.radius);
@@ -52,7 +65,10 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
     }
   }
   if (double) {
-    if (v1.x > v2.x) return;
+    
+    v1.in++;
+    v2.out++;
+    
     const d = Math.sqrt((v2.x - v1.x) ** 2 + (v2.y - v1.y) ** 2);
     const k = (v2.y - v1.y) / (v2.x - v1.x);
     const phi = Math.atan(k);
@@ -69,7 +85,14 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
 };
 
 Graph.prototype.vertex = function(x, y, n) {
-  const v = {x: x, y: y, num: n};
+  const v = {
+    x: x, 
+    y: y, 
+    num: n, 
+    deg: 0, 
+    in: 0, 
+    out: 0,
+  };
   this.vertices[n - 1] = v;
 };
 
@@ -103,7 +126,7 @@ Graph.prototype.draw = function() {
           const v2 = this.vertices[j];
           this.connect(v1, v2, true);
         }
-        else if (this.adjM[i][j] === 1 && this.adjM[j][i] === 1) {
+        else if (this.adjM[i][j] === 1 && this.adjM[j][i] === 1 && i >= j) {
           const v1 = this.vertices[i];
           const v2 = this.vertices[j];
           this.connect(v1, v2, true, true);
@@ -121,6 +144,39 @@ Graph.prototype.circle = function() {
     this.vertex(x, y, i);
   }
   this.draw();
+};
+
+Graph.prototype.info = function(container) {
+  let result = '';
+  let data = '';
+  let homo = true;
+  if (this.directed) homo = false;
+  const Degree = this.vertices[0].deg;
+  
+  for (let vert of this.vertices) {
+    if (!this.directed) {
+      if (vert.deg !== Degree) homo = false;
+      data = `Vertex: ${vert.num}, deg: ${vert.deg}<br>`;
+      } else {
+      data = `Vertex: ${vert.num}, In: ${vert.in}, Out: ${vert.out}<br>`;
+    }
+    result += data;
+  }
+  
+  for (let vert of this.vertices) {
+      if (vert.deg === 0 && (vert.in === 0 && vert.out === 0)) {
+        result += `<font color="red">Isolated vertex ${vert.num}</font><br>`;
+      } else if (vert.deg === 1) {
+        result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
+      } else if (vert.in === 1 && vert.out === 0) {
+        result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
+      } else if (vert.out === 1 && vert.in === 0) {
+        result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
+      }
+
+  }
+  if (homo) result += 'Graph is <strong>homogenous</strong>'
+  container.innerHTML = result;
 };
 
 const canvas_arrow = (context, fromx, fromy, tox, toy) => {

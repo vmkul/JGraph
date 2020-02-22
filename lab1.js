@@ -24,6 +24,7 @@ for (let i = 0; i < matrix2.length; i++) {
 const draw = () => {
   const canvas1 = document.getElementById('graph1');
   if (canvas1.getContext) {
+    const container = document.getElementById('graph1_info');
     const ctx = canvas1.getContext('2d');
     const graph1 = new Graph(ctx, matrix1, true, 10);
     graph1.circle();
@@ -31,6 +32,7 @@ const draw = () => {
   
   const canvas2 = document.getElementById('graph2');
   if (canvas2.getContext) {
+    const container = document.getElementById('graph2_info');
     const ctx = canvas2.getContext('2d');
     const graph2 = new Graph(ctx, matrix2, false, 10);
     graph2.circle();
