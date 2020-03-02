@@ -150,11 +150,12 @@ Graph.prototype.info = function(container) {
   let result = '';
   let data = '';
   let homo = true;
-  let Degree = this.vertices[0].deg;
-  if (this.directed) Degree = this.vertices[0].in + this.vertices[0].out;
-  
+  let Degree = this.directed ? this.vertices[0].in + this.vertices[0].out :  this.vertices[0].deg;
+
   for (let vert of this.vertices) {
-    if (vert.deg !== Degree || (vert.in + vert.out !== Degree)) homo = false;
+    if (this.directed && (vert.in + vert.out !== Degree)) homo = false;
+    if (!this.directed && vert.deg !== Degree) homo = false;
+    
     if (!this.directed) {
       data = `Vertex: ${vert.num}, deg: ${vert.deg}<br>`;
       } else {
