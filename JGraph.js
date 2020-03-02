@@ -150,12 +150,12 @@ Graph.prototype.info = function(container) {
   let result = '';
   let data = '';
   let homo = true;
-  if (this.directed) homo = false;
-  const Degree = this.vertices[0].deg;
+  let Degree = this.vertices[0].deg;
+  if (this.directed) Degree = this.vertices[0].in + this.vertices[0].out;
   
   for (let vert of this.vertices) {
+    if (vert.deg !== Degree || (vert.in + vert.out !== Degree)) homo = false;
     if (!this.directed) {
-      if (vert.deg !== Degree) homo = false;
       data = `Vertex: ${vert.num}, deg: ${vert.deg}<br>`;
       } else {
       data = `Vertex: ${vert.num}, In: ${vert.in}, Out: ${vert.out}<br>`;
@@ -175,7 +175,7 @@ Graph.prototype.info = function(container) {
       }
 
   }
-  if (homo) result += 'Graph is <strong>homogenous</strong>'
+  if (homo) result += 'Graph is <strong>homogenous</strong> ' + Degree;
   container.innerHTML = result;
 };
 
