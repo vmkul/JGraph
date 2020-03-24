@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="aa">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Graph</title>
+    <script type="text/javascript" src="JGraph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="lab3.js" charset="utf-8"></script>
+    <style type="text/css">
+      canvas { border: 1px solid black; }
+      body { text-align: center; }  
+      div { border: 1px solid black; position: absolute; padding: 20px; text-align: left; margin-left: 50px;}
+      .trans {margin-top: 300px;}
+    </style>
+  </head>
+  <body onload="draw();">
+    <h1>Directed graph</h1>
+    <div id="graph1_info"></div>
+    <div id="graph1_trans_info" class="trans"></div>
+    <canvas id="graph1" width="1000" height="1000"></canvas>
+  </body>
+</html>
