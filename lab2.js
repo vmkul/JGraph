@@ -27,7 +27,7 @@ const draw = () => {
     const container = document.getElementById('graph1_info');
     const ctx = canvas1.getContext('2d');
     const graph1 = new Graph(ctx, matrix1, true, 10);
-    graph1.circle();
+    graph1.circle(170, 200, 200);
     graph1.info(container);
   }
   
@@ -36,7 +36,7 @@ const draw = () => {
     const container = document.getElementById('graph2_info');
     const ctx = canvas2.getContext('2d');
     const graph2 = new Graph(ctx, matrix2, false, 10);
-    graph2.circle();
+    graph2.circle(170, 200, 200);
     graph2.info(container);
   }
 };
