@@ -65,22 +65,30 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
     }
   }
   if (double) {
-    
     v1.in++;
     v2.out++;
-    
     const d = Math.sqrt((v2.x - v1.x) ** 2 + (v2.y - v1.y) ** 2);
-    const k = (v2.y - v1.y) / (v2.x - v1.x);
-    const phi = Math.atan(k);
+    let k = (v2.y - v1.y) / (v2.x - v1.x);
+    let phi = Math.atan(k);
     this.ctx.save();
-    this.ctx.translate(v1.x, v1.y);
-    this.ctx.rotate(phi);
-    this.ctx.moveTo(this.radius, 0);
-    canvas_arrow(this.ctx, d / 2, d / 8, this.radius, 0)
-    this.ctx.moveTo(d / 2, d / 8);
-    this.ctx.lineTo(d - this.radius, 0);
+
+   if (v2.x >= v1.x) {
+     this.ctx.translate(v1.x, v1.y);
+     this.ctx.rotate(phi);
+     canvas_arrow(this.ctx, d / 2, d / 8, this.radius, 0);
+     this.ctx.moveTo(d / 2, d / 8);
+     this.ctx.lineTo(d - this.radius, 0);
+   } else {
+     this.ctx.translate(v2.x, v2.y);
+     this.ctx.rotate(phi);
+     canvas_arrow(this.ctx, d / 2, d / 8, d - this.radius, 0);
+     this.ctx.moveTo(d / 2, d / 8);
+     this.ctx.lineTo(this.radius, 0);
+   }
+
     this.ctx.restore();
   }
+
   this.ctx.stroke();
 };
 
@@ -136,11 +144,11 @@ Graph.prototype.draw = function() {
   }
 };
 
-Graph.prototype.circle = function() {
+Graph.prototype.circle = function(radius, xc, yc) {
   for (let i = 1; i <= this.adjM.length; i++) {
     const delta = 2 * Math.PI / this.adjM.length;
-    const x = 170 * Math.cos(i * delta) + 200;
-    const y = 170 * Math.sin(i * delta) + 200;
+    const x = radius * Math.cos(i * delta) + xc;
+    const y = radius * Math.sin(i * delta) + yc;
     this.vertex(x, y, i);
   }
   this.draw();
@@ -176,8 +184,31 @@ Graph.prototype.info = function(container) {
       }
 
   }
-  if (homo) result += 'Graph is <strong>homogenous</strong> ' + Degree;
+  if (homo) result += 'Graph is <strong>homogeneous</strong> ' + Degree;
   container.innerHTML = result;
+};
+
+Graph.prototype.trans_info = function(container) {
+  let routes2 = 'Routes with length 2<br>';
+  let routes3 = 'Routes with length 3<br>';
+  const deg2 = closure(this.adjM, this.adjM);
+
+  for (let from = 0; from < deg2.length; from++) {
+    for (let to = 0; to < deg2.length; to++) {
+      if (deg2[from][to] !== 0) {
+        this.adjM[from].forEach((val1, index1) => {
+          if (val1 !== 0 && this.adjM[index1][to] !== 0) {
+            routes2 += `v${from + 1} v${index1 + 1} v${to + 1}<br>`;
+            for (let index2 = 0; index2 < this.adjM.length; index2++) {
+              if (this.adjM[to][index2] !== 0) routes3 += `v${from + 1} v${index1 + 1} v${to + 1} v${index2 + 1}<br>`;
+            }
+          }
+        })
+      }
+    }
+  }
+  container.innerHTML += routes2;
+  container.innerHTML += routes3;
 };
 
 const canvas_arrow = (context, fromx, fromy, tox, toy) => {
@@ -190,4 +221,62 @@ const canvas_arrow = (context, fromx, fromy, tox, toy) => {
   context.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
   context.moveTo(tox, toy);
   context.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
-}
+};
+
+const closure = (matrix1, matrix2) => {
+  let res = matrix1.map(arr => [...arr]);
+  res.forEach(val => val.fill(0));
+
+  for (const i in matrix1) {
+    for (const j in matrix1) {
+     if (matrix1[i][j] !== 0) {
+       for (const vert in matrix2[j]) {
+         if (matrix2[j][vert] !== 0) res[i][vert] = 1;//matrix2[j][vert];
+       }
+     }
+    }
+  }
+
+  return res;
+};
+
+const arraysEqual = (a1, a2) => {
+  return JSON.stringify(a1) === JSON.stringify(a2);
+};
+
+const trans_closure = m1 => {
+  let m2 = m1;
+  let temp = [];
+  while (!arraysEqual(m2, temp)) {
+    temp = m2;
+    m2 = closure(m1, m2);
+    for (let i = 0; i < m2.length; i++)
+      for (let j = 0; j < m2.length; j++) {
+        if (temp[i][j] === 1 && m2[i][j] !== 1) m2[i][j] = 1;
+        if (m2[i][i] !== 1) m2[i][i] = 1;
+      }
+  }
+  return m2;
+};
+
+const transpose = m => {
+  let res = m.map(arr => [...arr]);
+  let temp = 0;
+  for (let i = 0; i < m.length; i++)
+    for (let j = 0; j < m.length; j++) {
+      if (i > j) {
+        temp = res[j][i];
+        res[j][i] = res[i][j];
+        res[i][j] = temp;
+      }
+    }
+  return res;
+};
+
+const product_m = (m1, m2) => {
+  let res = m1.map(arr => [...arr]);
+  for (let i = 0; i < m1.length; i++)
+    for (let j = 0; j < m1.length; j++)
+      res[i][j] = m1[i][j] && m2[i][j];
+  return res;
+};
