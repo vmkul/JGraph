@@ -10,12 +10,17 @@
       body { text-align: center; }  
       div { border: 1px solid black; position: absolute; padding: 20px; text-align: left; margin-left: 50px;}
       .trans {margin-top: 300px;}
+      .comp {margin-left: calc(100% - 300px)}
     </style>
   </head>
   <body onload="draw();">
     <h1>Directed graph</h1>
     <div id="graph1_info"></div>
     <div id="graph1_trans_info" class="trans"></div>
+    <div id="component_info" class="comp"></div>
     <canvas id="graph1" width="1000" height="1000"></canvas>
+    <br>
+    <h1>Condensed graph</h1>
+    <canvas id="condensed" width="400" height="400"></canvas>
   </body>
 </html>
