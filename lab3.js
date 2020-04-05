@@ -83,7 +83,7 @@ const draw = () => {
     });
 
     const condensed_graph = new Graph(ctx2, condenseM, true, 20);
-    condensed_graph.circle(100, 200, 200);
+    condensed_graph.circle(0, 200, 200);
 
     const component_container = document.getElementById('component_info');
     let component_info = 'Components:<br>';
@@ -96,5 +96,10 @@ const draw = () => {
     console.table(reachM);
     console.log('Strong reachability matrix');
     console.table(strongM);
-  }
+    const deg2 = closure(matrix, matrix);
+    const deg3 = closure(matrix, deg2);
+    console.log('A^2');
+    console.table(deg2);
+    console.log('A^3');
+    console.table(deg3);  }
 };
