@@ -280,3 +280,29 @@ const product_m = (m1, m2) => {
       res[i][j] = m1[i][j] && m2[i][j];
   return res;
 };
+
+const BFS = (G, a) => {
+  const BFS_arr = new Array(G.adjM.length).fill(0);
+  const BFS_tree = [];
+  const queue = [];
+  let v, k = 1;
+
+  BFS_arr[--a] = 1;
+  queue.push(a);
+  while (queue.length !== 0) {
+    v = queue.shift();
+    BFS_tree[v] = [];
+    for (let i = 0; i < G.adjM.length; i++) {
+      if (G.adjM[v][i] === 1 && BFS_arr[i] === 0) {
+        BFS_tree[v][i] = 1;
+        k++;
+        BFS_arr[i] = k;
+        queue.push(i);
+      }
+    }
+  }
+  return {
+    tree: BFS_tree,
+    arr: BFS_arr,
+  };
+};
