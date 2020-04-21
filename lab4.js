@@ -1,3 +1,17 @@
+const matrix = [
+  [0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1],
+  [0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0],
+  [1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0],
+  [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+  [1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0],
+  [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+  [0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+  [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+];
+
 const test = [
   [0, 0, 0, 1, 0, 0],
   [0, 0, 0, 0, 1, 0],
@@ -18,21 +32,26 @@ const draw = () => {
     const container1 = document.getElementById('graph1_info');
     ctx = canvas1.getContext('2d');
     const ctx2 = canvas2.getContext('2d');
-    graph1 = new Graph(ctx, test, true, 20);
-    const data = BFS(graph1, 6);
+    graph1 = new Graph(ctx, matrix, true, 20);
+    const data = BFS(graph1, 1);
     const tree = data.tree;
     arr = data.arr;
     const graph2 = new Graph(ctx2, tree, true, 10);
 
     graph1.circle(400, 500, 500);
-    graph1.info(container1);
-    graph2.circle(100, 200, 200);
+    graph2.circle(150, 200, 200);
     step();
+
+    let result = '';
+    arr.forEach((val, index) => {
+      result += `Vertex: ${index + 1}, index: ${val}<br>`;
+    });
+    container1.innerHTML = result;
   }
 };
 
 const step = () => {
-  if (k > test.length) {
+  if (k > matrix.length) {
     alert.style.display = 'block';
     return;
   }
