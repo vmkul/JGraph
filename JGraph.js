@@ -1,12 +1,14 @@
-const Graph = function(ctx, adjM, directed = false, radius = 10) {
+const Graph = function (ctx, adjM, directed = false, radius = 10, weights = false, fontSize = 24) {
   this.directed = directed;
   this.adjM = adjM;
   this.vertices = [];
   this.ctx = ctx;
   this.radius = radius;
+  this.weights = weights;
+  this.fontSize = fontSize;
 };
 
-Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
+Graph.prototype.connect = function (v1, v2, directed = false, double = false) {
   this.ctx.beginPath()
   if (v1 === v2) {
     this.ctx.arc(v1.x, v1.y - 2 * this.radius, this.radius + 1, 0, 2 * Math.PI);
@@ -22,12 +24,12 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
   const xr = v2.x - v1.x;
   const yr = v2.y - v1.y;
   const k = yr / xr;
-  const xinter = Math.sqrt((this.radius ** 2)/(1 + k ** 2));
-  const yinter = k * xinter; 
+  const xinter = Math.sqrt((this.radius ** 2) / (1 + k ** 2));
+  const yinter = k * xinter;
   if (directed) {
     v1.out++;
     v2.in++;
-   
+
     if (v1.x === v2.x) {
       if (v2.y > v1.y) {
         canvas_arrow(this.ctx, v1.x, v1.y + this.radius, v2.x, v2.y - this.radius);
@@ -42,10 +44,12 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
       }
     }
   } else {
-    
+
     v1.deg++;
     v2.deg++;
-    
+
+    if (this.weights) this.drawWeights(v1, v2);
+
     if (v1.x === v2.x) {
       if (v2.y > v1.y) {
         this.ctx.moveTo(v1.x, v1.y + this.radius);
@@ -63,6 +67,7 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
         this.ctx.lineTo(v2.x - xinter, v2.y - yinter);
       }
     }
+
   }
   if (double) {
     v1.in++;
@@ -72,19 +77,19 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
     let phi = Math.atan(k);
     this.ctx.save();
 
-   if (v2.x >= v1.x) {
-     this.ctx.translate(v1.x, v1.y);
-     this.ctx.rotate(phi);
-     canvas_arrow(this.ctx, d / 2, d / 8, this.radius, 0);
-     this.ctx.moveTo(d / 2, d / 8);
-     this.ctx.lineTo(d - this.radius, 0);
-   } else {
-     this.ctx.translate(v2.x, v2.y);
-     this.ctx.rotate(phi);
-     canvas_arrow(this.ctx, d / 2, d / 8, d - this.radius, 0);
-     this.ctx.moveTo(d / 2, d / 8);
-     this.ctx.lineTo(this.radius, 0);
-   }
+    if (v2.x >= v1.x) {
+      this.ctx.translate(v1.x, v1.y);
+      this.ctx.rotate(phi);
+      canvas_arrow(this.ctx, d / 2, d / 8, this.radius, 0);
+      this.ctx.moveTo(d / 2, d / 8);
+      this.ctx.lineTo(d - this.radius, 0);
+    } else {
+      this.ctx.translate(v2.x, v2.y);
+      this.ctx.rotate(phi);
+      canvas_arrow(this.ctx, d / 2, d / 8, d - this.radius, 0);
+      this.ctx.moveTo(d / 2, d / 8);
+      this.ctx.lineTo(this.radius, 0);
+    }
 
     this.ctx.restore();
   }
@@ -92,28 +97,30 @@ Graph.prototype.connect = function(v1, v2, directed = false, double = false) {
   this.ctx.stroke();
 };
 
-Graph.prototype.vertex = function(x, y, n) {
+Graph.prototype.vertex = function (x, y, n) {
   const v = {
-    x: x, 
-    y: y, 
-    num: n, 
-    deg: 0, 
-    in: 0, 
+    x: x,
+    y: y,
+    num: n,
+    deg: 0,
+    in: 0,
     out: 0,
   };
   this.vertices[n - 1] = v;
 };
 
-Graph.prototype.draw = function() {
+Graph.prototype.draw = function () {
   this.ctx.textAlign = 'center';
   this.ctx.textBaseline = 'middle';
   for (const vert of this.vertices) {
-    this.ctx.beginPath();
-    this.ctx.arc(vert.x, vert.y, this.radius, 0, 2 * Math.PI);
-    this.ctx.fillText(vert.num, vert.x, vert.y);
-    this.ctx.stroke();
+    if (vert) {
+      this.ctx.beginPath();
+      this.ctx.arc(vert.x, vert.y, this.radius, 0, 2 * Math.PI);
+      this.ctx.fillText(vert.num, vert.x, vert.y);
+      this.ctx.stroke();
+    }
   }
-  if (!this.directed){
+  if (!this.directed) {
     for (const i in this.adjM) {
       for (const j in this.adjM[i]) {
         if (this.adjM[i][j] === 1 && i > j) {
@@ -144,51 +151,52 @@ Graph.prototype.draw = function() {
   }
 };
 
-Graph.prototype.circle = function(radius, xc, yc) {
+Graph.prototype.circle = function (radius, xc, yc) {
   for (let i = 1; i <= this.adjM.length; i++) {
     const delta = 2 * Math.PI / this.adjM.length;
     const x = radius * Math.cos(i * delta) + xc;
     const y = radius * Math.sin(i * delta) + yc;
+    if (typeof(this.adjM[i - 1]) === 'undefined') continue;
     this.vertex(x, y, i);
   }
   this.draw();
 };
 
-Graph.prototype.info = function(container) {
+Graph.prototype.info = function (container) {
   let result = '';
   let data = '';
   let homo = true;
-  let Degree = this.directed ? this.vertices[0].in + this.vertices[0].out :  this.vertices[0].deg;
+  let Degree = this.directed ? this.vertices[0].in + this.vertices[0].out : this.vertices[0].deg;
 
   for (let vert of this.vertices) {
     if (this.directed && (vert.in + vert.out !== Degree)) homo = false;
     if (!this.directed && vert.deg !== Degree) homo = false;
-    
+
     if (!this.directed) {
       data = `Vertex: ${vert.num}, deg: ${vert.deg}<br>`;
-      } else {
+    } else {
       data = `Vertex: ${vert.num}, In: ${vert.in}, Out: ${vert.out}<br>`;
     }
     result += data;
   }
-  
+
   for (let vert of this.vertices) {
-      if (vert.deg === 0 && (vert.in === 0 && vert.out === 0)) {
-        result += `<font color="red">Isolated vertex ${vert.num}</font><br>`;
-      } else if (vert.deg === 1) {
-        result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
-      } else if (vert.in === 1 && vert.out === 0) {
-        result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
-      } else if (vert.out === 1 && vert.in === 0) {
-        result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
-      }
+    if (vert.deg === 0 && (vert.in === 0 && vert.out === 0)) {
+      result += `<font color="red">Isolated vertex ${vert.num}</font><br>`;
+    } else if (vert.deg === 1) {
+      result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
+    } else if (vert.in === 1 && vert.out === 0) {
+      result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
+    } else if (vert.out === 1 && vert.in === 0) {
+      result += `<font color="green">Leaf vertex ${vert.num}</font><br>`;
+    }
 
   }
   if (homo) result += 'Graph is <strong>homogeneous</strong> ' + Degree;
   container.innerHTML = result;
 };
 
-Graph.prototype.trans_info = function(container) {
+Graph.prototype.trans_info = function (container) {
   let routes2 = 'Routes with length 2<br>';
   let routes3 = 'Routes with length 3<br>';
   const deg2 = closure(this.adjM, this.adjM);
@@ -211,6 +219,27 @@ Graph.prototype.trans_info = function(container) {
   container.innerHTML += routes3;
 };
 
+Graph.prototype.drawWeights = function (v1, v2) {
+  let a, b;
+  if (v1.x > v2.x)
+    [b, a] = [v1, v2];
+  else
+    [a, b] = [v1, v2];
+
+  const d = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+  let k = (b.y - a.y) / (b.x - a.x);
+  let phi = Math.atan(k);
+  this.ctx.save();
+
+  this.ctx.font = this.fontSize + 'px serif';
+  this.ctx.textAlign = 'center';
+  this.ctx.translate(a.x, a.y);
+  this.ctx.rotate(phi);
+  this.ctx.fillText(this.weights[v1.num - 1][v2.num - 1], d / 2, -10);
+
+  this.ctx.restore();
+};
+
 const canvas_arrow = (context, fromx, fromy, tox, toy) => {
   const headlen = 10; // length of head in pixels
   const dx = tox - fromx;
@@ -229,11 +258,11 @@ const closure = (matrix1, matrix2) => {
 
   for (const i in matrix1) {
     for (const j in matrix1) {
-     if (matrix1[i][j] !== 0) {
-       for (const vert in matrix2[j]) {
-         if (matrix2[j][vert] !== 0) res[i][vert] = 1;//matrix2[j][vert];
-       }
-     }
+      if (matrix1[i][j] !== 0) {
+        for (const vert in matrix2[j]) {
+          if (matrix2[j][vert] !== 0) res[i][vert] = 1;//matrix2[j][vert];
+        }
+      }
     }
   }
 
@@ -306,3 +335,12 @@ const BFS = (G, a) => {
     arr: BFS_arr,
   };
 };
+
+const arr_min = arr => {
+  const min = arr.reduce((prev, cur) => {
+    if (prev === 0) return cur;
+    if (cur === 0) return prev;
+    return cur >= prev ? prev : cur;
+  });
+  return min;
+}
