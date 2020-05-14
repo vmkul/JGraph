@@ -30,7 +30,7 @@ let check_w = weights.map(arr => [...arr]);
 
 for (let i = 0; i < matrix.length; i++)
   for (let j = 0; j < matrix.length; j++) {
-    if (matrix[i][i] = 1) matrix[i][i] = 0;
+    if (matrix[i][i] === 1) matrix[i][i] = 0;
     if (matrix[i][j] === 1 && matrix[j][i] !== 1) matrix[j][i] = 1;
   }
 
