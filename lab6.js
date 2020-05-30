@@ -49,9 +49,10 @@ const draw = () => {
 
 const step = () => {
   const filtered = status.filter(obj => obj.temp);
+  const routes = document.getElementById('graph1_info');
+  let content = '';
+
   if (!filtered.length) {
-    const routes = document.getElementById('graph1_info');
-    let content = '';
     alert.style.display = 'block';
     status.forEach(obj => {
       let line = `Route to vertex ${obj.num + 1}: `;
@@ -69,6 +70,11 @@ const step = () => {
     routes.innerHTML = content;
     return;
   }
+
+  status.forEach(obj => {
+    content += `Current distance to ${obj.num + 1} = ${obj.distance}<br>`;
+  });
+  routes.innerHTML = content;
 
   const active = filtered.reduce((prev, cur) => prev.distance > cur.distance ? cur : prev);
   active.temp = false;
