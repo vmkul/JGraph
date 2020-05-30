@@ -50,8 +50,12 @@ const draw = () => {
   }
 };
 
+let BFS_arr = new Array(matrix.length).fill(0);
+let queue = [ 0 ];
+BFS_arr[0] = 1;
+
 const step = () => {
-  if (k > matrix.length) {
+  if (k > matrix.length || queue.length === 0) {
     alert.style.display = 'block';
     return;
   }
@@ -69,12 +73,36 @@ const step = () => {
   ctx.beginPath();
   ctx.arc(graph1.vertices[curr].x, graph1.vertices[curr].y, 40, 0, 2 * Math.PI);
   ctx.stroke();
-  k++;
+
+  ctx.globalAlpha = 0.5;
+  BFS_arr.forEach((status, index) => {
+    ctx.beginPath();
+    if (status === 0) {
+      ctx.fillStyle = 'red';
+    } else {
+      ctx.fillStyle = 'green';
+    }
+    ctx.arc(graph1.vertices[index].x, graph1.vertices[index].y, 20, 0, 2 * Math.PI);
+    ctx.fill();
+  });
   last = curr;
+
+  const v = queue.shift();
+  for (let i = 0; i < matrix.length; i++) {
+    if (matrix[v][i] === 1 && BFS_arr[i] === 0) {
+      BFS_arr[i] = k;
+      queue.push(i);
+    }
+  }
+  k++;
 };
 
 const reset = () => {
+  BFS_arr = new Array(matrix.length).fill(0);
+  queue = [ 0 ];
+  BFS_arr[0] = 1;
   alert.style.display = 'none';
   k = 1;
   step();
 };
+
